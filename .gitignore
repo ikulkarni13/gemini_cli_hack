@@ -52,11 +52,31 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# Project specific
+# Project specific - Generated files and personal content
 vision-board.html
+vision-board.png
+vision_board_images/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.webp
+*.svg
+*.tiff
+*.ico
+*.html
+*.txt
 *.log
+*.pdf
+*.doc
+*.docx
+*.xlsx
+*.csv
 temp/
 tmp/
+test_folder/
+Desktop/
 
 # API Keys and sensitive files
 *.key

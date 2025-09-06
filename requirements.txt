@@ -1,4 +1,5 @@
 # Core dependencies for the gemini CLI hack project
 pypdf>=3.0.0
 Pillow>=9.0.0
-# Note: requests removed since we now use Gemini CLI instead of direct API calls
+requests>=2.28.0
+# Note: requests needed for OpenAI DALL-E API calls for image generation

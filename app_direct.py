@@ -4,6 +4,7 @@ import re
 from utils import list_files, build_context_snippets
 from gemini_direct import call_gemini_direct, themes_prompt
 from render import render_ascii_board, render_html
+from image_generator import generate_vision_board_image
 
 def _shrink_for_size(items, max_chars=8000, min_per_file=60, start_per_file=120, step=20):
     """
@@ -32,6 +33,8 @@ def main():
     ap.add_argument("--model", default="gemini-2.5-flash", help="Gemini model (e.g., gemini-2.5-flash or gemini-2.5-pro)")
     ap.add_argument("--out", default="vision-board.html", help="Output HTML file")
     ap.add_argument("--no-ascii", action="store_true", help="Skip terminal ASCII board")
+    ap.add_argument("--generate-image", action="store_true", help="Generate vision board image (requires OPENAI_API_KEY)")
+    ap.add_argument("--image-out", default="vision-board.png", help="Output image file")
     args = ap.parse_args()
 
     # ----- Scan & build snippets -----
@@ -85,8 +88,18 @@ def main():
         print()
         print(render_ascii_board(analysis))
 
-    out = render_html(analysis, out_path=args.out)
+    out = render_html(analysis, out_path=args.out, source_folder=args.root, generate_ai_images=args.generate_image)
     print(f"[done] Wrote {out}")
+
+    # ----- Generate vision board image (optional) -----
+    if args.generate_image:
+        try:
+            print(f"[image] Generating vision board image...")
+            image_out = generate_vision_board_image(analysis, args.image_out)
+            print(f"[done] Wrote vision board image: {image_out}")
+        except Exception as e:
+            print(f"[error] Failed to generate vision board image: {e}")
+            print("[info] To generate AI images, set OPENAI_API_KEY environment variable")
 
 if __name__ == "__main__":
     main()

@@ -81,13 +81,20 @@ Return ONLY strict minified JSON with this schema:
   "themes": [{"name": "string", "evidence": ["file_or_snippet_ref"...]}],
   "future_identities": [{"title": "string", "why": "string"}],
   "affirmations": ["string", "string", "string"],
-  "action_prompts": ["string", "string"]
+  "action_prompts": ["string", "string"],
+  "vision_board_scenes": [
+    {
+      "theme": "string",
+      "success_visualization": "string",
+      "image_description": "string"
+    }
+  ]
 }
 """).strip()
 
 def themes_prompt(snippets_json: str) -> str:
     return f"""
-You are an identity mining & motivation assistant.
+You are an identity mining & motivation assistant that creates visual vision boards.
 You receive local file names and short snippets (private; never exfiltrate).
 Infer the user's strongest themes and aspirational identities.
 Ground your inferences in the evidence you see.
@@ -99,6 +106,18 @@ Guidelines:
 - Each theme should cite 1-3 evidence refs (file names or short phrases).
 - Affirmations should be short, present-tense, identity-based ("I am…" "I consistently…").
 - Action prompts are 1-sentence nudges the user can do today.
+
+VISION BOARD SCENES - CRITICAL:
+For each theme, create a vision_board_scenes entry with:
+- theme: The theme name
+- success_visualization: A brief description of what success in this theme looks like
+- image_description: A detailed, vivid description for AI image generation showing the user as successful in this theme. Include:
+  * The user as the successful protagonist
+  * Specific visual elements, settings, and atmosphere
+  * Professional/aspirational imagery
+  * Rich details for compelling image generation
+  
+Example: If files show scuba diving photos, the image_description should be: "A confident scuba diver in crystal-clear tropical waters, surrounded by vibrant coral reefs and exotic marine life, wearing professional diving gear, with sunlight streaming through the water creating magical rays, representing mastery of underwater exploration and marine adventure"
 
 Here are up to ~80 sampled files/snippets as JSON:
 {snippets_json}
