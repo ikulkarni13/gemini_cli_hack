@@ -1,73 +1,80 @@
 import os
 import json
-import requests
+import subprocess
+import tempfile
 from textwrap import dedent
 
-DEFAULT_MODEL = "gemini-1.5-flash"
+DEFAULT_MODEL = "gemini-2.5-flash"
 
+def call_gemini_cli(prompt: str, model: str = DEFAULT_MODEL) -> str:
+    """
+    Call Gemini using the official Gemini CLI.
+    Requires gemini CLI to be installed and authenticated.
+    """
+    try:
+        # Create a temporary file for the prompt
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as temp_file:
+            temp_file.write(prompt)
+            temp_file_path = temp_file.name
+        
+        # Build the gemini CLI command
+        cmd = [
+            'gemini', 'generate',
+            '--model', model,
+            '--temperature', '0.7',
+            '--max-output-tokens', '2048',
+            '--input-file', temp_file_path
+        ]
+        
+        print(f"[debug] Calling Gemini CLI with model: {model}")
+        print(f"[debug] Command: {' '.join(cmd)}")
+        
+        # Execute the CLI command
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+        
+        # Clean up temp file
+        os.unlink(temp_file_path)
+        
+        if result.returncode != 0:
+            error_msg = result.stderr.strip() if result.stderr else "Unknown error"
+            if "not found" in error_msg or "command not found" in error_msg:
+                raise RuntimeError(
+                    "Gemini CLI not found. Please install it:\n"
+                    "1. Install: npm install -g @google/generative-ai-cli\n"
+                    "2. Authenticate: gemini auth login\n"
+                    "3. Or follow: https://github.com/google/generative-ai-cli"
+                )
+            raise RuntimeError(f"Gemini CLI failed (exit {result.returncode}): {error_msg}")
+        
+        output = result.stdout.strip()
+        if not output:
+            raise RuntimeError("Gemini CLI returned empty output")
+            
+        return output
+        
+    except subprocess.TimeoutExpired:
+        raise RuntimeError("Gemini CLI call timed out after 60 seconds")
+    except FileNotFoundError:
+        raise RuntimeError(
+            "Gemini CLI not found. Please install it:\n"
+            "1. Install: npm install -g @google/generative-ai-cli\n"
+            "2. Authenticate: gemini auth login\n"
+            "3. Or follow: https://github.com/google/generative-ai-cli"
+        )
+    except Exception as e:
+        raise RuntimeError(f"Unexpected error calling Gemini CLI: {e}")
+
+# Keep the old function name for compatibility
 def call_gemini_direct(prompt: str, model: str = DEFAULT_MODEL, api_key: str = None) -> str:
     """
-    Direct API call to Google AI Studio Gemini API.
-    Requires GOOGLE_API_KEY environment variable or api_key parameter.
+    Wrapper for backward compatibility - now uses CLI instead of direct API.
     """
-    if not api_key:
-        api_key = os.environ.get("GOOGLE_API_KEY")
-    
-    # Try to load from .env file if not found in environment
-    if not api_key:
-        try:
-            with open(".env", "r") as f:
-                for line in f:
-                    if line.startswith("GOOGLE_API_KEY="):
-                        api_key = line.split("=", 1)[1].strip()
-                        break
-        except FileNotFoundError:
-            pass
-    
-    if not api_key:
-        raise RuntimeError(
-            "No API key found. Please:\n"
-            "1. Go to https://makersuite.google.com/app/apikey\n"
-            "2. Create a new API key\n"
-            "3. Set it as environment variable: $env:GOOGLE_API_KEY='your-key-here'\n"
-            "Or create a .env file with GOOGLE_API_KEY=your-key-here"
-        )
-    
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-    
-    headers = {
-        "Content-Type": "application/json"
-    }
-    
-    data = {
-        "contents": [{
-            "parts": [{
-                "text": prompt
-            }]
-        }],
-        "generationConfig": {
-            "temperature": 0.7,
-            "maxOutputTokens": 2048,
-        }
-    }
-    
-    try:
-        print(f"[debug] Calling Gemini API directly with model: {model}")
-        response = requests.post(url, headers=headers, json=data, timeout=30)
-        response.raise_for_status()
-        
-        result = response.json()
-        
-        if "candidates" in result and len(result["candidates"]) > 0:
-            content = result["candidates"][0]["content"]["parts"][0]["text"]
-            return content.strip()
-        else:
-            raise RuntimeError(f"Unexpected API response format: {result}")
-            
-    except requests.exceptions.RequestException as e:
-        raise RuntimeError(f"API request failed: {e}")
-    except KeyError as e:
-        raise RuntimeError(f"Unexpected response format, missing key: {e}. Response: {result}")
+    return call_gemini_cli(prompt, model)
 
 SCHEMA_JSON = dedent("""
 Return ONLY strict minified JSON with this schema:

@@ -56,7 +56,7 @@ def main():
     print(f"[gemini] Prompt chars: {len(snippets_json)}")
     print(f"[gemini] Calling model: {args.model}")
 
-    # ----- Build prompt & call Gemini (Direct API) -----
+    # ----- Build prompt & call Gemini CLI -----
     prompt = themes_prompt(snippets_json)
     raw = call_gemini_direct(prompt, model=args.model)
     
@@ -67,7 +67,7 @@ def main():
     # ----- Parse JSON robustly -----
     # Handle empty response
     if not raw or raw.strip() == "":
-        raise RuntimeError("Gemini API returned empty response. Check your API key or model availability.")
+        raise RuntimeError("Gemini CLI returned empty response. Check that Gemini CLI is installed and authenticated.")
     
     # Try plain JSON first
     try:

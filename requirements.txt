@@ -1,4 +1,4 @@
 # Core dependencies for the gemini CLI hack project
 pypdf>=3.0.0
 Pillow>=9.0.0
-requests>=2.28.0
+# Note: requests removed since we now use Gemini CLI instead of direct API calls
