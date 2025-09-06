@@ -9,8 +9,13 @@ Scans a local folder, samples filenames/snippets, and asks Gemini to infer your 
 It turns your *real work-in-progress* into motivation: a personal, evolving vision board grounded in your actual files.
 
 **How to run**
+
+Windows:
 ```bash
 python -m venv .venv && source .venv/bin/activate
 # Ensure Gemini CLI is installed + authed
-python app.py ~/Documents --max-files 80 --out vision-board.html
+python app_direct.py ~/Documents --max-files 80 --out vision-board.html
 open vision-board.html  # macOS; use xdg-open on Linux
+
+Mac:
+run this in cmd export GOOGLE_API_KEY='your api key'
