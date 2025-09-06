@@ -13,13 +13,24 @@ def call_gemini_direct(prompt: str, model: str = DEFAULT_MODEL, api_key: str = N
     if not api_key:
         api_key = os.environ.get("GOOGLE_API_KEY")
     
+    # Try to load from .env file if not found in environment
+    if not api_key:
+        try:
+            with open(".env", "r") as f:
+                for line in f:
+                    if line.startswith("GOOGLE_API_KEY="):
+                        api_key = line.split("=", 1)[1].strip()
+                        break
+        except FileNotFoundError:
+            pass
+    
     if not api_key:
         raise RuntimeError(
             "No API key found. Please:\n"
             "1. Go to https://makersuite.google.com/app/apikey\n"
             "2. Create a new API key\n"
             "3. Set it as environment variable: $env:GOOGLE_API_KEY='your-key-here'\n"
-            "Or pass it directly to the function."
+            "Or create a .env file with GOOGLE_API_KEY=your-key-here"
         )
     
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
