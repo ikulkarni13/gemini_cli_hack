@@ -12,22 +12,15 @@ def call_gemini_cli(prompt: str, model: str = DEFAULT_MODEL) -> str:
     Requires gemini CLI to be installed and authenticated.
     """
     try:
-        # Create a temporary file for the prompt
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as temp_file:
-            temp_file.write(prompt)
-            temp_file_path = temp_file.name
-        
-        # Build the gemini CLI command
+        # Build the gemini CLI command using -p flag for prompt
         cmd = [
-            'gemini', 'generate',
+            'gemini',
             '--model', model,
-            '--temperature', '0.7',
-            '--max-output-tokens', '2048',
-            '--input-file', temp_file_path
+            '--prompt', prompt
         ]
         
         print(f"[debug] Calling Gemini CLI with model: {model}")
-        print(f"[debug] Command: {' '.join(cmd)}")
+        print(f"[debug] Command: gemini --model {model} --prompt [PROMPT_TEXT]")
         
         # Execute the CLI command
         result = subprocess.run(
@@ -37,8 +30,14 @@ def call_gemini_cli(prompt: str, model: str = DEFAULT_MODEL) -> str:
             timeout=60
         )
         
-        # Clean up temp file
-        os.unlink(temp_file_path)
+        # Debug output
+        print(f"[debug] CLI exit code: {result.returncode}")
+        print(f"[debug] CLI stdout length: {len(result.stdout) if result.stdout else 0}")
+        print(f"[debug] CLI stderr length: {len(result.stderr) if result.stderr else 0}")
+        if result.stderr:
+            print(f"[debug] CLI stderr: {result.stderr[:500]}")
+        if result.stdout:
+            print(f"[debug] CLI stdout preview: {result.stdout[:200]}")
         
         if result.returncode != 0:
             error_msg = result.stderr.strip() if result.stderr else "Unknown error"

@@ -29,7 +29,7 @@ def main():
     ap = argparse.ArgumentParser(description="Generate a future-self vision board from local files.")
     ap.add_argument("root", help="Folder to scan (e.g., ~/Documents or ./demo_data)")
     ap.add_argument("--max-files", type=int, default=80, help="Cap number of files to sample")
-    ap.add_argument("--model", default="gemini-1.5-flash", help="Gemini model (e.g., gemini-1.5-flash or gemini-1.5-pro)")
+    ap.add_argument("--model", default="gemini-2.5-flash", help="Gemini model (e.g., gemini-2.5-flash or gemini-2.5-pro)")
     ap.add_argument("--out", default="vision-board.html", help="Output HTML file")
     ap.add_argument("--no-ascii", action="store_true", help="Skip terminal ASCII board")
     args = ap.parse_args()
