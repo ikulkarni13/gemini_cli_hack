@@ -2,7 +2,7 @@ import json
 import argparse
 import re
 from utils import list_files, build_context_snippets
-from gemini_io import call_gemini, themes_prompt
+from gemini_direct import call_gemini_direct, themes_prompt
 from render import render_ascii_board, render_html
 
 def _shrink_for_size(items, max_chars=8000, min_per_file=60, start_per_file=120, step=20):
@@ -51,21 +51,29 @@ def main():
         print("[warn] No readable text extracted; falling back to filenames only.")
         compact = [{"path": str(p), "name": p.name, "snippet": p.stem} for p in paths]
 
-    # Cap prompt size for snappy CLI calls on Windows
+    # Cap prompt size for snappy API calls
     compact, snippets_json = _shrink_for_size(compact, max_chars=8000)
     print(f"[gemini] Prompt chars: {len(snippets_json)}")
     print(f"[gemini] Calling model: {args.model}")
 
-    # ----- Build prompt & call Gemini (STDIN in gemini_io.py) -----
+    # ----- Build prompt & call Gemini (Direct API) -----
     prompt = themes_prompt(snippets_json)
-    raw = call_gemini(prompt, model=args.model)
+    raw = call_gemini_direct(prompt, model=args.model)
+    
+    # Debug: Show what we got back
+    print(f"[debug] Raw response length: {len(raw)}")
+    print(f"[debug] Raw response (first 200 chars): {repr(raw[:200])}")
 
     # ----- Parse JSON robustly -----
+    # Handle empty response
+    if not raw or raw.strip() == "":
+        raise RuntimeError("Gemini API returned empty response. Check your API key or model availability.")
+    
     # Try plain JSON first
     try:
         analysis = json.loads(raw)
     except json.JSONDecodeError:
-        # Extract first {...} block in case CLI prints banners/preamble
+        # Extract first {...} block in case API returns extra text
         m = re.search(r"\{.*\}", raw, flags=re.S)
         if not m:
             # Surface what we received to help debug
@@ -73,7 +81,7 @@ def main():
         analysis = json.loads(m.group(0))
 
     # ----- Render outputs -----
-    if not args.no-ascii:
+    if not args.no_ascii:
         print()
         print(render_ascii_board(analysis))
 
