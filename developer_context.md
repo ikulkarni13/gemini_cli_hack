@@ -1,0 +1,3 @@
+# This is what were building
+
+VisionBoard CLI turns your hard drive into a mirror of who you’re becoming: a local-first AI that scans the folders you choose (PDFs, notes, code, images) and instantly builds a living vision board grounded in your actual work—clear themes with evidence tags, future identities with a why, short present-tense affirmations, and tiny action prompts you can do today. It’s evidence-based motivation rather than wishful thinking: show a messy folder, run one command, open a clean HTML board (plus a slick terminal view), and see your path—Quant, Engineer, Musician—snap into focus. Everything stays on your machine. Your files. Your future. Visualized.
